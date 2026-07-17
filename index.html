@@ -5,48 +5,83 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>タイムカードチェックアプリ</title>
 <style>
-  :root{ --ink:#1f2430; --sub:#6b7280; --line:#e5e7eb; --brand:#0091c7; --accent:#e8f6fc; --ok:#1f9d55; --err:#d64545; }
+  :root{ --ink:#1f2430; --sub:#6b7280; --line:#e5e7eb; --brand:#0091c7; --accent:#e8f6fc;
+    --ok:#1f9d55; --err:#d64545; --red-bg:#fdecec; --red-cell:#f8c9c9; }
   *{box-sizing:border-box}
   body{margin:0;background:#f5f6f8;color:var(--ink);
     font-family:"Segoe UI","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;line-height:1.7;
-    display:flex;justify-content:center;padding:28px 16px}
-  .card{background:#fff;border:1px solid var(--line);border-radius:16px;max-width:600px;width:100%;
-    padding:30px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+    display:flex;justify-content:center;padding:24px 14px}
+  .wrap{max-width:920px;width:100%}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;width:100%;
+    padding:26px 26px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
   h1{font-size:22px;margin:0 0 4px;color:var(--brand)}
-  .lead{color:var(--sub);font-size:13px;margin:0 0 20px}
+  h2{font-size:17px;margin:0 0 12px}
+  .lead{color:var(--sub);font-size:13px;margin:0 0 18px}
   label.fld{display:block;font-size:13px;color:var(--sub);margin:0 0 6px}
-  input[type=password]{width:100%;padding:12px 14px;font-size:16px;border:1px solid var(--line);
+  input[type=password],input[type=text]{width:100%;padding:11px 13px;font-size:16px;border:1px solid var(--line);
     border-radius:10px;outline:none}
-  input[type=password]:focus{border-color:var(--brand)}
-  .btn{display:inline-block;width:100%;margin-top:14px;padding:12px 16px;font-size:16px;font-weight:700;
-    color:#fff;background:var(--brand);border:none;border-radius:10px;cursor:pointer}
+  input:focus{border-color:var(--brand)}
+  .btn{display:inline-block;padding:11px 18px;font-size:15px;font-weight:700;color:#fff;background:var(--brand);
+    border:none;border-radius:10px;cursor:pointer}
   .btn:disabled{background:#b9c2cc;cursor:default}
+  .btn.full{width:100%;margin-top:14px}
   .btn.sub{background:#fff;color:var(--brand);border:1px solid var(--brand)}
+  .btn.grey{background:#fff;color:var(--sub);border:1px solid var(--line)}
+  .btn.ok{background:var(--ok)}
+  .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
   .msg{font-size:13px;margin-top:10px;min-height:18px}
-  .msg.err{color:var(--err)}
-  .msg.ok{color:var(--ok)}
+  .msg.err{color:var(--err)} .msg.ok{color:var(--ok)}
   .hidden{display:none}
-  .drop{border:2px dashed #c2c9d2;border-radius:14px;padding:34px 18px;text-align:center;
+  .drop{border:2px dashed #c2c9d2;border-radius:14px;padding:38px 18px;text-align:center;
     background:#fafbfc;cursor:pointer;transition:.15s}
   .drop:hover,.drop.drag{border-color:var(--brand);background:var(--accent)}
-  .drop .big{font-size:15px;font-weight:700;margin:0 0 4px}
+  .drop .big{font-size:16px;font-weight:700;margin:0 0 4px}
   .drop .small{font-size:12px;color:var(--sub);margin:0}
-  .steps{font-size:13px;color:var(--sub);background:var(--accent);border-radius:12px;
-    padding:14px 16px;margin:0 0 18px}
-  .steps b{color:#08475b}
-  .steps ol{margin:8px 0 0;padding-left:20px}
-  .result{border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:16px;background:#fafbfc}
-  .result h3{margin:0 0 8px;font-size:15px;color:var(--brand)}
-  .result table{width:100%;border-collapse:collapse;font-size:13px}
-  .result td{padding:4px 2px;border-bottom:1px solid var(--line)}
-  .result td:last-child{text-align:right;font-weight:700}
-  .foot{font-size:11px;color:var(--sub);margin-top:18px;text-align:center}
-  .spin{display:inline-block;width:15px;height:15px;border:2px solid #cfd6dd;border-top-color:var(--brand);
-    border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
+  .steps{font-size:13px;color:var(--sub);background:var(--accent);border-radius:12px;padding:14px 16px;margin:0 0 18px}
+  .steps b{color:#08475b} .steps ol{margin:8px 0 0;padding-left:20px}
+  .spin{display:inline-block;width:34px;height:34px;border:4px solid #cfd6dd;border-top-color:var(--brand);
+    border-radius:50%;animation:sp .7s linear infinite}
   @keyframes sp{to{transform:rotate(360deg)}}
+  .loading-box{text-align:center;padding:50px 0}
+  .loading-box p{margin-top:16px;color:var(--sub);font-size:14px}
+  .emp{border:1px solid var(--line);border-radius:12px;padding:13px 16px;margin-bottom:10px;background:#fafbfc}
+  .emp.haserr{background:var(--red-bg);border-color:#f3c6c6}
+  .emp .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .emp .who{font-weight:700;font-size:15px}
+  .emp .who .code{color:var(--sub);font-weight:400;font-size:12px;margin-right:8px}
+  .emp .meta{font-size:13px;color:var(--sub)}
+  .emp .errline{margin-top:6px;font-size:13px}
+  .emp .errcount{font-weight:700;color:var(--err);cursor:pointer;text-decoration:underline}
+  .emp .errcount.zero{color:var(--ok);text-decoration:none;cursor:default}
+  .datelink{display:inline-block;margin:2px 4px 0 0;padding:1px 8px;border:1px solid #e3b3b3;border-radius:20px;
+    background:#fff;color:var(--err);font-size:12px;cursor:pointer;text-decoration:none}
+  .datelink:hover{background:#fbe3e3}
+  .summary-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .pill{display:inline-block;background:var(--accent);color:#0b5a73;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700}
+  .gridwrap{overflow:auto;max-height:70vh;border:1px solid var(--line);border-radius:12px}
+  table.grid{border-collapse:collapse;font-size:13px;white-space:nowrap;min-width:100%}
+  table.grid th,table.grid td{border:1px solid #eceff2;padding:5px 8px;text-align:center}
+  table.grid thead th{position:sticky;top:0;background:#f2f5f7;z-index:2;font-size:12px;color:var(--sub)}
+  table.grid td.name{text-align:left}
+  table.grid tr.emp-head td{background:#eef4f7;text-align:left;font-weight:700;color:var(--brand)}
+  table.grid tr.total td{background:#f7f9fa;font-weight:700;color:var(--sub)}
+  table.grid td.edit{background:#fffef4;cursor:text}
+  table.grid td.edit:focus{outline:2px solid var(--brand);background:#fff}
+  table.grid td.err{background:var(--red-cell)!important}
+  table.grid td.comment{text-align:left;color:var(--err);font-weight:700}
+  table.grid tr.flash td{animation:flash 1.4s ease}
+  @keyframes flash{0%,60%{background:#fff6bf}100%{}}
+  .cmsg{border:1px solid var(--line);border-radius:12px;padding:0;margin-bottom:14px;overflow:hidden}
+  .cmsg .hd{display:flex;justify-content:space-between;align-items:center;background:#fafbfc;
+    border-bottom:1px solid var(--line);padding:9px 14px}
+  .cmsg .hd .nm{font-weight:700;font-size:14px}
+  .cmsg pre{margin:0;padding:14px;font-family:inherit;font-size:13px;white-space:pre-wrap;line-height:1.7}
+  .foot{font-size:11px;color:var(--sub);margin-top:16px;text-align:center}
+  .copied{color:var(--ok);font-size:12px;margin-left:8px}
 </style>
 </head>
 <body>
+<div class="wrap">
   <div class="card">
 
     <!-- ===== ログイン ===== -->
@@ -57,186 +92,363 @@
       <input type="text" id="uname" autocomplete="off" placeholder="自由（空欄でもOK）">
       <label class="fld" for="pw" style="margin-top:12px">パスワード</label>
       <input type="password" id="pw" autocomplete="off" placeholder="パスワードを入力">
-      <button class="btn" id="pwBtn">入る</button>
+      <button class="btn full" id="pwBtn">入る</button>
       <div class="msg err" id="pwMsg"></div>
     </div>
 
-    <!-- ===== アプリ本体 ===== -->
-    <div id="app" class="hidden">
+    <!-- ===== ① アップロード ===== -->
+    <div id="screen-upload" class="hidden">
       <h1>タイムカードチェックアプリ</h1>
-      <p class="lead">打刻データ（エクセル）をアップロードすると、社員の休みに番号を付けて出力します。</p>
-
+      <p class="lead">打刻データ（エクセル）をアップロードすると、休憩不足・打刻漏れをチェックします。</p>
       <div class="steps">
         <b>使い方</b>
         <ol>
           <li>スマレジ等から出した「打刻データ」のエクセルを下にアップロード</li>
-          <li>自動で「コメント」「休み」列が追加され、社員の休みに番号が付きます</li>
-          <li>変換後のエクセルが自動でダウンロードされます</li>
+          <li>社員ごとに休み日数・エラー件数が一覧表示されます</li>
+          <li>エクセル画面で修正 → 連絡用の文面をコピーして完了</li>
         </ol>
       </div>
-
       <div class="drop" id="drop">
         <p class="big">📄 ここにエクセルをドロップ</p>
         <p class="small">またはクリックしてファイルを選択（.xlsx）</p>
         <input type="file" id="file" accept=".xlsx" class="hidden">
       </div>
+      <div class="msg" id="upMsg"></div>
+    </div>
 
-      <div class="msg" id="appMsg"></div>
+    <!-- ===== ② 読み込み中 ===== -->
+    <div id="screen-loading" class="hidden">
+      <div class="loading-box">
+        <div class="spin"></div>
+        <p>エクセルを読み込み中…</p>
+      </div>
+    </div>
 
-      <div class="result hidden" id="result"></div>
+    <!-- ===== ③ 一覧 ===== -->
+    <div id="screen-summary" class="hidden">
+      <div class="summary-head">
+        <h2 style="margin:0">チェック結果一覧</h2>
+        <span class="pill" id="monthPill"></span>
+      </div>
+      <div id="empList"></div>
+      <div class="btnrow">
+        <button class="btn sub" id="btnExcel">エクセルを確認</button>
+        <button class="btn grey" id="btnReflect">修正を反映</button>
+        <button class="btn ok" id="btnComplete">これでチェックを完了する</button>
+      </div>
+      <div class="msg" id="sumMsg"></div>
+    </div>
+
+    <!-- ===== エクセル画面 ===== -->
+    <div id="screen-excel" class="hidden">
+      <div class="summary-head">
+        <h2 style="margin:0">エクセル画面（黄色いセルは編集できます）</h2>
+      </div>
+      <p class="lead" style="margin:0 0 10px">出勤・退勤・休憩を直すと、赤色とエラー件数がその場で更新されます。</p>
+      <div class="gridwrap"><table class="grid" id="grid"></table></div>
+      <div class="btnrow">
+        <button class="btn grey" id="btnReflect2">修正を反映</button>
+        <button class="btn sub" id="btnDownload">エクセルをダウンロード</button>
+        <button class="btn" id="btnBack">一覧に戻る</button>
+      </div>
+      <div class="msg" id="exMsg"></div>
+    </div>
+
+    <!-- ===== ④ 連絡文 ===== -->
+    <div id="screen-contact" class="hidden">
+      <div class="summary-head">
+        <h2 style="margin:0">エラーがあった方への連絡文</h2>
+      </div>
+      <div id="contactList"></div>
+      <div class="btnrow">
+        <button class="btn" id="btnRestart">最初の画面に戻る</button>
+      </div>
     </div>
 
     <p class="foot">© タイムカードチェックアプリ</p>
   </div>
+</div>
 
 <script src="exceljs.min.js"></script>
 <script>
 /* ========== 設定 ========== */
 // パスワードを変えたいときは、ここの文字だけ書き換えてください
 const PASSWORD = "timecard";
+const REQ6 = 0.75;   // 6時間超で必要な休憩（45分＝0.75h）
+const REQ8 = 1.0;    // 8時間超で必要な休憩（60分＝1.0h）
 /* ========================== */
 
+const screens = ['gate','screen-upload','screen-loading','screen-summary','screen-excel','screen-contact'];
+function show(id){ screens.forEach(s=>document.getElementById(s).classList.toggle('hidden', s!==id)); }
+
 /* ---------- ログイン ---------- */
-const gate = document.getElementById('gate');
-const app  = document.getElementById('app');
-const pw   = document.getElementById('pw');
-const pwMsg= document.getElementById('pwMsg');
-
+const pw=document.getElementById('pw'), pwMsg=document.getElementById('pwMsg');
 function tryLogin(){
-  if(pw.value === PASSWORD){
-    try{ sessionStorage.setItem('dakoku_ok','1'); }catch(e){}
-    gate.classList.add('hidden');
-    app.classList.remove('hidden');
-  }else{
-    pwMsg.textContent = 'パスワードが違います。';
-    pw.select();
-  }
+  if(pw.value===PASSWORD){ try{sessionStorage.setItem('tc_ok','1')}catch(e){} show('screen-upload'); }
+  else { pwMsg.textContent='パスワードが違います。'; pw.select(); }
 }
-document.getElementById('pwBtn').addEventListener('click', tryLogin);
-pw.addEventListener('keydown', e=>{ if(e.key==='Enter') tryLogin(); });
-try{ if(sessionStorage.getItem('dakoku_ok')==='1'){ gate.classList.add('hidden'); app.classList.remove('hidden'); } }catch(e){}
+document.getElementById('pwBtn').addEventListener('click',tryLogin);
+pw.addEventListener('keydown',e=>{if(e.key==='Enter')tryLogin();});
+try{ if(sessionStorage.getItem('tc_ok')==='1') show('screen-upload'); }catch(e){}
 
-/* ---------- 変換ロジック ---------- */
+/* ---------- ユーティリティ ---------- */
 function cellStr(v){
   if(v===null||v===undefined) return '';
   if(typeof v==='object'){
-    if(v.result!==undefined && v.result!==null) return String(v.result);
+    if(v.result!==undefined&&v.result!==null) return String(v.result);
     if(v.text!==undefined) return String(v.text);
-    if(v.formula!==undefined) return '='+v.formula;
+    if(v.formula!==undefined) return '';
     if(v.richText) return v.richText.map(t=>t.text).join('');
     return '';
   }
-  return String(v);
+  return String(v).trim();
 }
-const isShain   = t => String(t||'').includes('社員');
-const isDateRow = d => /\d{4}\/\d{1,2}\/\d{1,2}/.test(String(d||''));
+const isShain = t => String(t||'').includes('社員');
+const isDateStr = d => /\d{4}\/\d{1,2}\/\d{1,2}/.test(String(d||''));
+function parseTime(s){ s=String(s||'').trim(); if(!s) return null; const m=s.match(/^(\d{1,2}):(\d{2})/); if(!m) return null; return parseInt(m[1],10)+parseInt(m[2],10)/60; }
+function parseNum(s){ s=String(s||'').trim(); if(!s) return 0; if(s.indexOf(':')>=0){ const t=parseTime(s); return t===null?0:t; } const n=parseFloat(s); return isNaN(n)?0:n; }
+function round25(x){ return Math.round(x*4)/4; }
+function mmdd(raw){ const m=String(raw).match(/\/(\d{1,2})\/(\d{1,2})/); return m?(+m[1])+'/'+(+m[2]):''; }
+function getPlain(v){ if(v===null||v===undefined) return null; if(typeof v==='object'){ if(v.result!==undefined&&v.result!==null) return v.result; if(v.text!==undefined) return v.text; if(v.richText) return v.richText.map(t=>t.text).join(''); return null; } return v; }
 
-// 1シートを変換。返り値 = { staffCount, shainCount, numbered }
-function transformSheet(ws){
-  // ヘッダー確認（勤務データのシートだけ処理）
-  if(cellStr(ws.getRow(1).getCell(1).value) !== '(年月日)') return null;
-  // すでに変換済みなら二重処理しない
-  if(cellStr(ws.getRow(1).getCell(6).value) === 'コメント') return null;
-
-  const n = ws.rowCount;
-  // 「所属グループ名」(5列目)の右に、空の2列を挿入
-  ws.spliceColumns(6, 0, new Array(n).fill(null), new Array(n).fill(null));
-  ws.getRow(1).getCell(6).value = 'コメント';
-  ws.getRow(1).getCell(7).value = '休み';
-
-  const counters = {};
-  const staffSet = new Set();
-  let shainSet = new Set(), numbered = 0;
-
-  for(let r=2; r<=ws.rowCount; r++){
-    const row  = ws.getRow(r);
-    const date = cellStr(row.getCell(1).value);
-    const code = cellStr(row.getCell(2).value);
-    const type = cellStr(row.getCell(4).value);
-    if(code) staffSet.add(code);
-    if(!isShain(type)) continue;      // 社員のみ対象
-    if(!isDateRow(date)) continue;    // 月間計などの行はスキップ
-    shainSet.add(code);
-    const inT  = cellStr(row.getCell(9).value);   // 出勤時刻（+2列ずれ）
-    const outT = cellStr(row.getCell(10).value);  // 退勤時刻
-    // 出勤・退勤の両方が入っている日「以外」に番号を振る
-    if(inT !== '' && outT !== '') continue;
-    counters[code] = (counters[code]||0) + 1;
-    row.getCell(7).value = counters[code];
-    numbered++;
-  }
-  return { staffCount: staffSet.size, shainCount: shainSet.size, numbered };
-}
-
-function outName(inName){
-  let base = inName.replace(/\.xlsx$/i,'');
-  base = base.replace(/\s*\(\d+\)\s*$/,'');   // 末尾の (1) などを除去
-  base = base.replace(/\s*(の)?コピー\s*$/,''); // 「コピー」を除去
-  return base.trim() + '.xlsx';
-}
+/* ---------- 状態 ---------- */
+let state = null;
+let employees = [];
 
 /* ---------- ファイル処理 ---------- */
-const drop   = document.getElementById('drop');
-const fileEl = document.getElementById('file');
-const appMsg = document.getElementById('appMsg');
-const result = document.getElementById('result');
-
-drop.addEventListener('click', ()=> fileEl.click());
-drop.addEventListener('dragover', e=>{ e.preventDefault(); drop.classList.add('drag'); });
-drop.addEventListener('dragleave', ()=> drop.classList.remove('drag'));
-drop.addEventListener('drop', e=>{
-  e.preventDefault(); drop.classList.remove('drag');
-  if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
-});
-fileEl.addEventListener('change', ()=>{ if(fileEl.files.length) handleFile(fileEl.files[0]); });
+const drop=document.getElementById('drop'), fileEl=document.getElementById('file'), upMsg=document.getElementById('upMsg');
+drop.addEventListener('click',()=>fileEl.click());
+drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('drag');});
+drop.addEventListener('dragleave',()=>drop.classList.remove('drag'));
+drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('drag');if(e.dataTransfer.files.length)handleFile(e.dataTransfer.files[0]);});
+fileEl.addEventListener('change',()=>{if(fileEl.files.length)handleFile(fileEl.files[0]);});
 
 async function handleFile(file){
-  result.classList.add('hidden'); result.innerHTML='';
-  appMsg.className='msg';
-  if(!/\.xlsx$/i.test(file.name)){
-    appMsg.classList.add('err'); appMsg.textContent='.xlsx ファイルを選んでください。';
-    return;
-  }
-  appMsg.innerHTML = '<span class="spin"></span>変換中…';
+  upMsg.className='msg';
+  if(!/\.xlsx$/i.test(file.name)){ upMsg.classList.add('err'); upMsg.textContent='.xlsx ファイルを選んでください。'; return; }
+  show('screen-loading');
   try{
     const buf = await file.arrayBuffer();
-    const wb = new ExcelJS.Workbook();
-    await wb.xlsx.load(buf);
+    const wb = new ExcelJS.Workbook(); await wb.xlsx.load(buf);
+    let ws=null; wb.eachSheet(s=>{ if(!ws && cellStr(s.getRow(1).getCell(1).value)==='(年月日)') ws=s; });
+    if(!ws){ show('screen-upload'); upMsg.className='msg err'; upMsg.textContent='勤務データのシートが見つかりませんでした。'; return; }
 
-    let done = null;
-    wb.eachSheet(ws=>{ const r = transformSheet(ws); if(r && !done) done = r; });
+    const hdr=ws.getRow(1);
+    const find=name=>{ for(let c=1;c<=ws.columnCount;c++){ if(cellStr(hdr.getCell(c).value)===name) return c; } return -1; };
+    const ci = {
+      date: find('(年月日)')>0?find('(年月日)'):1,
+      code: find('スタッフコード')>0?find('スタッフコード'):2,
+      name: find('姓 名')>0?find('姓 名'):(find('姓　名')>0?find('姓　名'):3),
+      type: find('スタッフ種別')>0?find('スタッフ種別'):4,
+      inC: find('出勤時刻'), outC: find('退勤時刻'),
+      brkC: find('休憩時間'), workC: find('実労働時間')
+    };
 
-    if(!done){
-      appMsg.className='msg err';
-      appMsg.textContent='勤務データが見つからないか、すでに変換済みのファイルです。';
-      return;
+    const records=[]; let firstMonth=null;
+    for(let r=2;r<=ws.rowCount;r++){
+      const row=ws.getRow(r);
+      const date=cellStr(row.getCell(ci.date).value);
+      const code=cellStr(row.getCell(ci.code).value);
+      if(!date&&!code) continue;
+      const isTotal = !isDateStr(date);
+      const inT=cellStr(row.getCell(ci.inC).value);
+      const outT=cellStr(row.getCell(ci.outC).value);
+      const brkH=parseNum(row.getCell(ci.brkC).value);
+      const workC=cellStr(row.getCell(ci.workC).value);
+      const workH=workC?parseNum(workC):null;
+      const rec={ srcRow:r, isTotal, date, rawDate:date, code,
+        name:cellStr(row.getCell(ci.name).value), type:cellStr(row.getCell(ci.type).value),
+        inT, outT, brkH, workH, dirty:{} };
+      if(!isTotal && firstMonth===null){ const m=date.match(/\/(\d{1,2})\//); if(m) firstMonth=parseInt(m[1],10); }
+      records.push(rec);
     }
-
-    const outBuf = await wb.xlsx.writeBuffer();
-    const blob = new Blob([outBuf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-    const name = outName(file.name);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = name; document.body.appendChild(a); a.click();
-    a.remove(); setTimeout(()=>URL.revokeObjectURL(url), 4000);
-
-    appMsg.className='msg ok';
-    appMsg.textContent='✓ 変換が完了しました。ダウンロードを確認してください。';
-    result.classList.remove('hidden');
-    result.innerHTML =
-      '<h3>変換結果</h3><table>'+
-      '<tr><td>出力ファイル名</td><td>'+name+'</td></tr>'+
-      '<tr><td>スタッフ人数</td><td>'+done.staffCount+' 名</td></tr>'+
-      '<tr><td>社員（番号付け対象）</td><td>'+done.shainCount+' 名</td></tr>'+
-      '<tr><td>休みに付けた番号の数</td><td>'+done.numbered+' 件</td></tr>'+
-      '</table>';
+    state = { srcWs:ws, ci, records, month:firstMonth||'' };
+    recompute();
+    setTimeout(()=>{ buildSummary(); show('screen-summary'); }, 450);
   }catch(err){
-    console.error(err);
-    appMsg.className='msg err';
-    appMsg.textContent='変換に失敗しました：'+(err && err.message ? err.message : err);
-  }finally{
-    fileEl.value='';
+    console.error(err); show('screen-upload');
+    upMsg.className='msg err'; upMsg.textContent='読み込みに失敗しました：'+(err&&err.message?err.message:err);
   }
+}
+
+/* ---------- 判定 ---------- */
+function validate(rec){
+  rec.errType=''; rec.red={}; rec.dayOff=false;
+  if(rec.isTotal) return;
+  const hasIn=!!rec.inT, hasOut=!!rec.outT;
+  if(!hasIn && !hasOut){ rec.dayOff=true; return; }
+  if(!hasIn || !hasOut){ rec.errType='打刻漏れ'; if(!hasIn)rec.red.in=1; if(!hasOut)rec.red.out=1; rec.red.comment=1; return; }
+  let w=rec.workH; if(w===null||isNaN(w)){ const s=parseTime(rec.inT),e=parseTime(rec.outT); w=(s!==null&&e!==null&&e>s)?round25(e-s-rec.brkH):0; }
+  if(w>8 && rec.brkH<REQ8){ rec.errType='休憩不足'; rec.red.brk=1; rec.red.comment=1; }
+  else if(w>6 && rec.brkH<REQ6){ rec.errType='休憩不足'; rec.red.brk=1; rec.red.comment=1; }
+}
+
+function recompute(){
+  const map=new Map(); const order=[];
+  for(const rec of state.records){
+    validate(rec);
+    if(!map.has(rec.code)){ map.set(rec.code,{code:rec.code,name:rec.name,type:rec.type,offDays:0,errDates:[],yCount:0}); order.push(rec.code); }
+    const e=map.get(rec.code);
+    if(!rec.isTotal){
+      if(rec.dayOff){ e.offDays++; if(isShain(rec.type)){ e.yCount++; rec.yasumi=e.yCount; } else rec.yasumi=''; }
+      else rec.yasumi='';
+      if(rec.errType) e.errDates.push({srcRow:rec.srcRow, md:mmdd(rec.rawDate)});
+    } else rec.yasumi='';
+  }
+  employees=order.map(c=>{ const e=map.get(c); e.errCount=e.errDates.length; return e; });
+}
+
+/* ---------- ③ 一覧 ---------- */
+function buildSummary(){
+  document.getElementById('monthPill').textContent = state.month?(state.month+'月度'):'';
+  const box=document.getElementById('empList'); box.innerHTML='';
+  for(const e of employees){
+    const div=document.createElement('div'); div.className='emp'+(e.errCount?' haserr':'');
+    let dates=''; e.errDates.forEach(d=>{ dates+='<a class="datelink" data-row="'+d.srcRow+'">'+d.md+'</a>'; });
+    div.innerHTML =
+      '<div class="top"><div class="who"><span class="code">'+e.code+'</span>'+e.name+'</div>'+
+      '<div class="meta">休み '+e.offDays+'日</div></div>'+
+      '<div class="errline">エラー <span class="errcount '+(e.errCount?'':'zero')+'">'+e.errCount+'件</span> '+dates+'</div>';
+    box.appendChild(div);
+  }
+  box.querySelectorAll('.datelink').forEach(a=>a.addEventListener('click',()=>gotoRow(+a.dataset.row)));
+  box.querySelectorAll('.errcount').forEach(a=>{ if(a.textContent!=='0件') a.addEventListener('click',()=>{ buildGrid(); show('screen-excel'); }); });
+}
+
+/* ---------- エクセル画面 ---------- */
+const GRIDCOLS=[['date','年月日'],['name','氏名'],['comment','コメント'],['yasumi','休み'],
+  ['in','出勤時刻'],['out','退勤時刻'],['brk','休憩時間'],['work','実労働時間']];
+function buildGrid(){
+  const t=document.getElementById('grid');
+  let html='<thead><tr>'+GRIDCOLS.map(c=>'<th>'+c[1]+'</th>').join('')+'</tr></thead><tbody>';
+  let lastCode=null;
+  for(const rec of state.records){
+    if(rec.code!==lastCode){ html+='<tr class="emp-head"><td colspan="'+GRIDCOLS.length+'">'+rec.code+'　'+rec.name+'　（'+rec.type+'）</td></tr>'; lastCode=rec.code; }
+    html+=rowHtml(rec);
+  }
+  html+='</tbody>'; t.innerHTML=html;
+  bindGrid(t);
+}
+function rowHtml(rec){
+  const cls=rec.isTotal?'total':'';
+  const red=f=>rec.red&&rec.red[f]?' err':'';
+  const edClass=rec.isTotal?'':'edit ';
+  const ce=rec.isTotal?'':'contenteditable="true"';
+  const brkDisp=(!rec.isTotal&&(rec.brkH||rec.brkH===0))?rec.brkH:'';
+  const workDisp=(rec.workH||rec.workH===0)?rec.workH:'';
+  return '<tr id="r'+rec.srcRow+'" class="'+cls+'">'+
+    '<td>'+rec.date+'</td>'+
+    '<td class="name">'+(rec.isTotal?'':rec.name)+'</td>'+
+    '<td class="comment'+red('comment')+'">'+(rec.errType||'')+'</td>'+
+    '<td>'+(rec.yasumi||'')+'</td>'+
+    '<td class="'+edClass+red('in')+'" data-row="'+rec.srcRow+'" data-f="in" '+ce+'>'+(rec.inT||'')+'</td>'+
+    '<td class="'+edClass+red('out')+'" data-row="'+rec.srcRow+'" data-f="out" '+ce+'>'+(rec.outT||'')+'</td>'+
+    '<td class="'+edClass+red('brk')+'" data-row="'+rec.srcRow+'" data-f="brk" '+ce+'>'+brkDisp+'</td>'+
+    '<td>'+workDisp+'</td>'+
+  '</tr>';
+}
+function bindGrid(scope){
+  scope.querySelectorAll('td.edit').forEach(td=>{
+    td.addEventListener('blur',onEdit);
+    td.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault(); td.blur();} });
+  });
+}
+function onEdit(e){
+  const td=e.target; const srcRow=+td.dataset.row; const f=td.dataset.f; const val=td.textContent.trim();
+  const rec=state.records.find(r=>r.srcRow===srcRow); if(!rec) return;
+  if(f==='in'){ rec.inT=val; rec.dirty.in=1; }
+  if(f==='out'){ rec.outT=val; rec.dirty.out=1; }
+  if(f==='brk'){ rec.brkH=parseNum(val); rec.dirty.brk=1; }
+  const s=parseTime(rec.inT), en=parseTime(rec.outT);
+  if(s!==null && en!==null && en>s){ rec.workH=round25(en-s-(rec.brkH||0)); rec.dirty.work=1; }
+  else if(!rec.inT && !rec.outT){ rec.workH=null; }
+  recompute();
+  const tr=document.getElementById('r'+srcRow);
+  if(tr){ const tmp=document.createElement('tbody'); tmp.innerHTML=rowHtml(rec); const nr=tmp.firstElementChild; tr.replaceWith(nr); bindGrid(nr); }
+  buildSummary();
+}
+function gotoRow(srcRow){
+  buildGrid(); show('screen-excel');
+  setTimeout(()=>{ const tr=document.getElementById('r'+srcRow); if(tr){ tr.scrollIntoView({block:'center'}); tr.classList.add('flash'); setTimeout(()=>tr.classList.remove('flash'),1500);} },30);
+}
+
+/* ---------- ボタン ---------- */
+document.getElementById('btnExcel').addEventListener('click',()=>{ buildGrid(); show('screen-excel'); });
+document.getElementById('btnReflect').addEventListener('click',()=>{ recompute(); buildSummary(); flash('sumMsg','最新の状態に更新しました。'); });
+document.getElementById('btnReflect2').addEventListener('click',()=>{ recompute(); buildGrid(); flash('exMsg','最新の状態に更新しました。'); });
+document.getElementById('btnBack').addEventListener('click',()=>{ recompute(); buildSummary(); show('screen-summary'); });
+document.getElementById('btnComplete').addEventListener('click',()=>{ recompute(); buildContact(); show('screen-contact'); });
+document.getElementById('btnDownload').addEventListener('click',downloadXlsx);
+document.getElementById('btnRestart').addEventListener('click',()=>{ state=null; fileEl.value=''; upMsg.textContent=''; show('screen-upload'); });
+function flash(id,txt){ const el=document.getElementById(id); el.className='msg ok'; el.textContent=txt; setTimeout(()=>{el.textContent='';},2000); }
+
+/* ---------- ④ 連絡文 ---------- */
+function buildContact(){
+  const box=document.getElementById('contactList'); box.innerHTML='';
+  const month=state.month||'';
+  const targets=employees.filter(e=>e.errCount>0);
+  if(!targets.length){ box.innerHTML='<div class="emp"><div class="who">エラーはありませんでした 🎉</div><div class="meta" style="margin-top:6px">連絡が必要な方はいません。</div></div>'; return; }
+  for(const e of targets){
+    const dates=e.errDates.map(d=>d.md).join('、');
+    const msg=
+'【✅ '+month+'月度タイムカードチェックのお願い】\n'+
+e.name+'さんお疲れ様です！\n'+
+month+'月度のタイムカードの確認でご連絡です>＜\n\n'+
+'下記の'+e.errCount+'日間が、休憩時間不足または休憩打刻のない勤怠となっておりました。\n'+
+'お間違えないでしょうか？\n'+
+'修正が必要な場合には、申請のご対応をお願いいたします。\n'+
+'（承認は人事総務側で対応します！）\n\n'+
+'[要確認！]\n'+
+dates+'\n\n'+
+'何卒よろしくお願いいたしますm(_ _)m';
+    const div=document.createElement('div'); div.className='cmsg';
+    div.innerHTML='<div class="hd"><span class="nm">'+e.code+'　'+e.name+'</span>'+
+      '<span><button class="btn sub" style="padding:6px 14px;font-size:13px">コピー</button><span class="copied hidden">コピーしました</span></span></div>'+
+      '<pre></pre>';
+    div.querySelector('pre').textContent=msg;
+    const btn=div.querySelector('button'), done=div.querySelector('.copied');
+    btn.addEventListener('click',async()=>{ try{ await navigator.clipboard.writeText(msg); }catch(err){ const r=document.createRange(); r.selectNode(div.querySelector('pre')); const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r); try{document.execCommand('copy')}catch(x){} sel.removeAllRanges(); } done.classList.remove('hidden'); setTimeout(()=>done.classList.add('hidden'),1800); });
+    box.appendChild(div);
+  }
+}
+
+/* ---------- エクセル出力 ---------- */
+async function downloadXlsx(){
+  const ex=document.getElementById('exMsg'); ex.className='msg'; ex.innerHTML='<span class="spin" style="width:15px;height:15px;border-width:2px"></span> 作成中…';
+  try{
+    // spliceColumnsは空セルが多い行で塗りつぶしが漏れるため、新規シートに組み立てる
+    // （元バッファの再loadはハングするので、読み込み済みシートを再利用）
+    const sws=state.srcWs;
+    const out=new ExcelJS.Workbook(); const ows=out.addWorksheet('勤務データ');
+    const ci=state.ci; const lastCol=sws.columnCount;
+    const map=c=>c<=5?c:c+2;                 // 6列目に2列挿入
+    const cIn=map(ci.inC),cOut=map(ci.outC),cBrk=map(ci.brkC),cWork=map(ci.workC),cCom=6,cYas=7;
+    // ヘッダー
+    for(let c=1;c<=lastCol;c++){ const v=getPlain(sws.getRow(1).getCell(c).value); if(v!==null) ows.getRow(1).getCell(map(c)).value=v; }
+    ows.getRow(1).getCell(cCom).value='コメント'; ows.getRow(1).getCell(cYas).value='休み';
+    // 列幅を引き継ぎ
+    for(let c=1;c<=lastCol;c++){ const w=sws.getColumn(c).width; if(w) ows.getColumn(map(c)).width=w; }
+    ows.getColumn(cCom).width=12; ows.getColumn(cYas).width=6;
+    const byRow=new Map(); state.records.forEach(r=>byRow.set(r.srcRow,r));
+    const RED={type:'pattern',pattern:'solid',fgColor:{argb:'FFF8C9C9'}};
+    for(let r=2;r<=sws.rowCount;r++){
+      const srow=sws.getRow(r), orow=ows.getRow(r);
+      for(let c=1;c<=lastCol;c++){ const v=getPlain(srow.getCell(c).value); if(v!==null&&v!=='') orow.getCell(map(c)).value=v; }
+      const rec=byRow.get(r); if(!rec) continue;
+      if(rec.dirty.in) orow.getCell(cIn).value=rec.inT||null;
+      if(rec.dirty.out) orow.getCell(cOut).value=rec.outT||null;
+      if(rec.dirty.brk) orow.getCell(cBrk).value=(rec.brkH||rec.brkH===0)?rec.brkH:null;
+      if(rec.dirty.work) orow.getCell(cWork).value=(rec.workH||rec.workH===0)?rec.workH:null;
+      orow.getCell(cCom).value=rec.errType||null;
+      orow.getCell(cYas).value=(rec.yasumi!==''&&rec.yasumi!=null)?rec.yasumi:null;
+      if(rec.red){ if(rec.red.comment)orow.getCell(cCom).fill=RED; if(rec.red.brk)orow.getCell(cBrk).fill=RED; if(rec.red.in)orow.getCell(cIn).fill=RED; if(rec.red.out)orow.getCell(cOut).fill=RED; }
+    }
+    const outBuf=await out.xlsx.writeBuffer();
+    const blob=new Blob([outBuf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='タイムカードチェック済み.xlsx';
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000);
+    ex.className='msg ok'; ex.textContent='✓ ダウンロードしました。';
+  }catch(err){ console.error(err); ex.className='msg err'; ex.textContent='出力に失敗しました：'+(err&&err.message?err.message:err); }
 }
 </script>
 </body>
