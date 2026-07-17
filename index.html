@@ -240,7 +240,8 @@ async function handleFile(file){
     const hdr=ws.getRow(1); const lastCol=ws.columnCount;
     const find=name=>{ for(let c=1;c<=lastCol;c++){ if(cellStr(hdr.getCell(c).value)===name) return c; } return -1; };
     const ci={ date:1, code:2, name:(find('姓 名')>0?find('姓 名'):3), type:(find('スタッフ種別')>0?find('スタッフ種別'):4),
-      inC:find('出勤時刻'), outC:find('退勤時刻'), brkC:find('休憩時間'), workC:find('実労働時間'), yuqC:find('有休日数') };
+      inC:find('出勤時刻'), outC:find('退勤時刻'), brkC:find('休憩時間'), workC:find('実労働時間'),
+      stdInC:find('所定内労働時間'), yuqC:find('有休日数') };
     const headers=[]; for(let c=1;c<=lastCol;c++) headers[c]=cellStr(hdr.getCell(c).value);
     const keyOf=n=> n==='出勤時刻'?'in': n==='退勤時刻'?'out': n==='休憩時間'?'brk': n==='実労働時間'?'work': null;
     const gridDesc=[];
@@ -259,6 +260,7 @@ async function handleFile(file){
         name:cells[ci.name], type:cells[ci.type],
         inT:cells[ci.inC], outT:cells[ci.outC], brkH:parseNum(cells[ci.brkC]),
         workH:(cells[ci.workC]?parseNum(cells[ci.workC]):null), yuq:(ci.yuqC>0?parseNum(cells[ci.yuqC]):0),
+        stdIn:(ci.stdInC>0?parseNum(cells[ci.stdInC]):0),
         cells, dirty:{} };
       if(!rec.isTotal && firstMonth===null){ const m=date.match(/\/(\d{1,2})\//); if(m) firstMonth=parseInt(m[1],10); }
       records.push(rec);
@@ -285,15 +287,18 @@ function recompute(){
       r.status='work';
       if(r.workH===null||isNaN(r.workH)){ const s=parseTime(r.inT),e=parseTime(r.outT); r.workH=(s!==null&&e!==null&&e>s)?round25(e-s-(r.brkH||0)):0; }
     });
-    // 社員の短時間判定：一律「実働8時間未満」なら要確認
-    //（8時間未満の勤務形態の社員の扱いは、会社に確認後に対応予定。中央値ベースは使わない）
+    // その人の所定労働時間＝所定内労働時間の最大値（＝実労働−残業。残業が付く＝所定に達した日で判明）
+    // 残業が多い人でも所定内は上限で頭打ちになるので、個々の勤務形態が正しく出る
+    let standard=0;
+    for(const r of rs){ if(r.status==='work' && r.stdIn>standard) standard=r.stdIn; }
+    if(standard<=0) standard=STD8;
     // 日ごとの判定
     for(const r of rs){
       if(r.status==='work'){
         const w=r.workH||0;
         if(w>8 && r.brkH<REQ8){ r.errType='休憩不足'; r.red.brk=1; r.red.comment=1; }
         else if(w>6 && r.brkH<REQ6){ r.errType='休憩不足'; r.red.brk=1; r.red.comment=1; }
-        else if(isS && w>0 && w<STD8){ r.warnType='実働8h未満'; r.amber.work=1; r.amber.comment=1; }
+        else if(isS && w>0 && w<standard){ r.warnType='実働'+standard+'h未満'; r.amber.work=1; r.amber.comment=1; }
       } else if(r.status==='partial'){
         r.errType='打刻漏れ'; if(!r.inT)r.red.in=1; if(!r.outT)r.red.out=1; r.red.comment=1;
       }
