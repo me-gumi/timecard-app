@@ -285,19 +285,15 @@ function recompute(){
       r.status='work';
       if(r.workH===null||isNaN(r.workH)){ const s=parseTime(r.inT),e=parseTime(r.outT); r.workH=(s!==null&&e!==null&&e>s)?round25(e-s-(r.brkH||0)):0; }
     });
-    // 社員の短時間判定：基本は実働8h未満。ただし普段から8h未満の勤務形態の人は
-    // 実測中央値を基準にし、そこから目立って（45分超）短い日だけ拾う
-    const wh=rs.filter(r=>r.status==='work'&&r.workH!=null).map(r=>r.workH).sort((a,b)=>a-b);
-    const med=wh.length?wh[Math.floor((wh.length-1)/2)]:STD8;
-    const stdWorker=med>=STD8;
-    const shortThr=stdWorker?STD8:(med-0.75);
+    // 社員の短時間判定：一律「実働8時間未満」なら要確認
+    //（8時間未満の勤務形態の社員の扱いは、会社に確認後に対応予定。中央値ベースは使わない）
     // 日ごとの判定
     for(const r of rs){
       if(r.status==='work'){
         const w=r.workH||0;
         if(w>8 && r.brkH<REQ8){ r.errType='休憩不足'; r.red.brk=1; r.red.comment=1; }
         else if(w>6 && r.brkH<REQ6){ r.errType='休憩不足'; r.red.brk=1; r.red.comment=1; }
-        else if(isS && w>0 && w<shortThr){ r.warnType=stdWorker?'実働8h未満':'短時間'; r.amber.work=1; r.amber.comment=1; }
+        else if(isS && w>0 && w<STD8){ r.warnType='実働8h未満'; r.amber.work=1; r.amber.comment=1; }
       } else if(r.status==='partial'){
         r.errType='打刻漏れ'; if(!r.inT)r.red.in=1; if(!r.outT)r.red.out=1; r.red.comment=1;
       }
