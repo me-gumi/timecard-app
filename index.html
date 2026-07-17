@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>打刻データ変換アプリ</title>
+<title>タイムカードチェックアプリ</title>
 <style>
   :root{ --ink:#1f2430; --sub:#6b7280; --line:#e5e7eb; --brand:#0091c7; --accent:#e8f6fc; --ok:#1f9d55; --err:#d64545; }
   *{box-sizing:border-box}
@@ -51,7 +51,7 @@
 
     <!-- ===== ログイン ===== -->
     <div id="gate">
-      <h1>打刻データ変換アプリ</h1>
+      <h1>タイムカードチェックアプリ</h1>
       <p class="lead">合言葉を入力してください。</p>
       <label class="fld" for="pw">合言葉</label>
       <input type="password" id="pw" autocomplete="off" placeholder="合言葉を入力">
@@ -61,7 +61,7 @@
 
     <!-- ===== アプリ本体 ===== -->
     <div id="app" class="hidden">
-      <h1>打刻データ変換アプリ</h1>
+      <h1>タイムカードチェックアプリ</h1>
       <p class="lead">打刻データ（エクセル）をアップロードすると、社員の休みに番号を付けて出力します。</p>
 
       <div class="steps">
@@ -84,14 +84,14 @@
       <div class="result hidden" id="result"></div>
     </div>
 
-    <p class="foot">© 打刻データ変換アプリ</p>
+    <p class="foot">© タイムカードチェックアプリ</p>
   </div>
 
 <script src="exceljs.min.js"></script>
 <script>
 /* ========== 設定 ========== */
 // 合言葉を変えたいときは、ここの文字だけ書き換えてください
-const PASSWORD = "dakoku";
+const PASSWORD = "timecard";
 /* ========================== */
 
 /* ---------- ログイン ---------- */
