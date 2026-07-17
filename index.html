@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>打刻データ変換アプリ</title>
+<style>
+  :root{ --ink:#1f2430; --sub:#6b7280; --line:#e5e7eb; --brand:#0091c7; --accent:#e8f6fc; --ok:#1f9d55; --err:#d64545; }
+  *{box-sizing:border-box}
+  body{margin:0;background:#f5f6f8;color:var(--ink);
+    font-family:"Segoe UI","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;line-height:1.7;
+    display:flex;justify-content:center;padding:28px 16px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;max-width:600px;width:100%;
+    padding:30px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+  h1{font-size:22px;margin:0 0 4px;color:var(--brand)}
+  .lead{color:var(--sub);font-size:13px;margin:0 0 20px}
+  label.fld{display:block;font-size:13px;color:var(--sub);margin:0 0 6px}
+  input[type=password]{width:100%;padding:12px 14px;font-size:16px;border:1px solid var(--line);
+    border-radius:10px;outline:none}
+  input[type=password]:focus{border-color:var(--brand)}
+  .btn{display:inline-block;width:100%;margin-top:14px;padding:12px 16px;font-size:16px;font-weight:700;
+    color:#fff;background:var(--brand);border:none;border-radius:10px;cursor:pointer}
+  .btn:disabled{background:#b9c2cc;cursor:default}
+  .btn.sub{background:#fff;color:var(--brand);border:1px solid var(--brand)}
+  .msg{font-size:13px;margin-top:10px;min-height:18px}
+  .msg.err{color:var(--err)}
+  .msg.ok{color:var(--ok)}
+  .hidden{display:none}
+  .drop{border:2px dashed #c2c9d2;border-radius:14px;padding:34px 18px;text-align:center;
+    background:#fafbfc;cursor:pointer;transition:.15s}
+  .drop:hover,.drop.drag{border-color:var(--brand);background:var(--accent)}
+  .drop .big{font-size:15px;font-weight:700;margin:0 0 4px}
+  .drop .small{font-size:12px;color:var(--sub);margin:0}
+  .steps{font-size:13px;color:var(--sub);background:var(--accent);border-radius:12px;
+    padding:14px 16px;margin:0 0 18px}
+  .steps b{color:#08475b}
+  .steps ol{margin:8px 0 0;padding-left:20px}
+  .result{border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:16px;background:#fafbfc}
+  .result h3{margin:0 0 8px;font-size:15px;color:var(--brand)}
+  .result table{width:100%;border-collapse:collapse;font-size:13px}
+  .result td{padding:4px 2px;border-bottom:1px solid var(--line)}
+  .result td:last-child{text-align:right;font-weight:700}
+  .foot{font-size:11px;color:var(--sub);margin-top:18px;text-align:center}
+  .spin{display:inline-block;width:15px;height:15px;border:2px solid #cfd6dd;border-top-color:var(--brand);
+    border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+  <div class="card">
+
+    <!-- ===== ログイン ===== -->
+    <div id="gate">
+      <h1>打刻データ変換アプリ</h1>
+      <p class="lead">合言葉を入力してください。</p>
+      <label class="fld" for="pw">合言葉</label>
+      <input type="password" id="pw" autocomplete="off" placeholder="合言葉を入力">
+      <button class="btn" id="pwBtn">入る</button>
+      <div class="msg err" id="pwMsg"></div>
+    </div>
+
+    <!-- ===== アプリ本体 ===== -->
+    <div id="app" class="hidden">
+      <h1>打刻データ変換アプリ</h1>
+      <p class="lead">打刻データ（エクセル）をアップロードすると、社員の休みに番号を付けて出力します。</p>
+
+      <div class="steps">
+        <b>使い方</b>
+        <ol>
+          <li>スマレジ等から出した「打刻データ」のエクセルを下にアップロード</li>
+          <li>自動で「コメント」「休み」列が追加され、社員の休みに番号が付きます</li>
+          <li>変換後のエクセルが自動でダウンロードされます</li>
+        </ol>
+      </div>
+
+      <div class="drop" id="drop">
+        <p class="big">📄 ここにエクセルをドロップ</p>
+        <p class="small">またはクリックしてファイルを選択（.xlsx）</p>
+        <input type="file" id="file" accept=".xlsx" class="hidden">
+      </div>
+
+      <div class="msg" id="appMsg"></div>
+
+      <div class="result hidden" id="result"></div>
+    </div>
+
+    <p class="foot">© 打刻データ変換アプリ</p>
+  </div>
+
+<script src="exceljs.min.js"></script>
+<script>
+/* ========== 設定 ========== */
+// 合言葉を変えたいときは、ここの文字だけ書き換えてください
+const PASSWORD = "dakoku";
+/* ========================== */
+
+/* ---------- ログイン ---------- */
+const gate = document.getElementById('gate');
+const app  = document.getElementById('app');
+const pw   = document.getElementById('pw');
+const pwMsg= document.getElementById('pwMsg');
+
+function tryLogin(){
+  if(pw.value === PASSWORD){
+    try{ sessionStorage.setItem('dakoku_ok','1'); }catch(e){}
+    gate.classList.add('hidden');
+    app.classList.remove('hidden');
+  }else{
+    pwMsg.textContent = '合言葉が違います。';
+    pw.select();
+  }
+}
+document.getElementById('pwBtn').addEventListener('click', tryLogin);
+pw.addEventListener('keydown', e=>{ if(e.key==='Enter') tryLogin(); });
+try{ if(sessionStorage.getItem('dakoku_ok')==='1'){ gate.classList.add('hidden'); app.classList.remove('hidden'); } }catch(e){}
+
+/* ---------- 変換ロジック ---------- */
+function cellStr(v){
+  if(v===null||v===undefined) return '';
+  if(typeof v==='object'){
+    if(v.result!==undefined && v.result!==null) return String(v.result);
+    if(v.text!==undefined) return String(v.text);
+    if(v.formula!==undefined) return '='+v.formula;
+    if(v.richText) return v.richText.map(t=>t.text).join('');
+    return '';
+  }
+  return String(v);
+}
+const isShain   = t => String(t||'').includes('社員');
+const isDateRow = d => /\d{4}\/\d{1,2}\/\d{1,2}/.test(String(d||''));
+
+// 1シートを変換。返り値 = { staffCount, shainCount, numbered }
+function transformSheet(ws){
+  // ヘッダー確認（勤務データのシートだけ処理）
+  if(cellStr(ws.getRow(1).getCell(1).value) !== '(年月日)') return null;
+  // すでに変換済みなら二重処理しない
+  if(cellStr(ws.getRow(1).getCell(6).value) === 'コメント') return null;
+
+  const n = ws.rowCount;
+  // 「所属グループ名」(5列目)の右に、空の2列を挿入
+  ws.spliceColumns(6, 0, new Array(n).fill(null), new Array(n).fill(null));
+  ws.getRow(1).getCell(6).value = 'コメント';
+  ws.getRow(1).getCell(7).value = '休み';
+
+  const counters = {};
+  const staffSet = new Set();
+  let shainSet = new Set(), numbered = 0;
+
+  for(let r=2; r<=ws.rowCount; r++){
+    const row  = ws.getRow(r);
+    const date = cellStr(row.getCell(1).value);
+    const code = cellStr(row.getCell(2).value);
+    const type = cellStr(row.getCell(4).value);
+    if(code) staffSet.add(code);
+    if(!isShain(type)) continue;      // 社員のみ対象
+    if(!isDateRow(date)) continue;    // 月間計などの行はスキップ
+    shainSet.add(code);
+    const inT  = cellStr(row.getCell(9).value);   // 出勤時刻（+2列ずれ）
+    const outT = cellStr(row.getCell(10).value);  // 退勤時刻
+    // 出勤・退勤の両方が入っている日「以外」に番号を振る
+    if(inT !== '' && outT !== '') continue;
+    counters[code] = (counters[code]||0) + 1;
+    row.getCell(7).value = counters[code];
+    numbered++;
+  }
+  return { staffCount: staffSet.size, shainCount: shainSet.size, numbered };
+}
+
+function outName(inName){
+  let base = inName.replace(/\.xlsx$/i,'');
+  base = base.replace(/\s*\(\d+\)\s*$/,'');   // 末尾の (1) などを除去
+  base = base.replace(/\s*(の)?コピー\s*$/,''); // 「コピー」を除去
+  return base.trim() + '.xlsx';
+}
+
+/* ---------- ファイル処理 ---------- */
+const drop   = document.getElementById('drop');
+const fileEl = document.getElementById('file');
+const appMsg = document.getElementById('appMsg');
+const result = document.getElementById('result');
+
+drop.addEventListener('click', ()=> fileEl.click());
+drop.addEventListener('dragover', e=>{ e.preventDefault(); drop.classList.add('drag'); });
+drop.addEventListener('dragleave', ()=> drop.classList.remove('drag'));
+drop.addEventListener('drop', e=>{
+  e.preventDefault(); drop.classList.remove('drag');
+  if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+fileEl.addEventListener('change', ()=>{ if(fileEl.files.length) handleFile(fileEl.files[0]); });
+
+async function handleFile(file){
+  result.classList.add('hidden'); result.innerHTML='';
+  appMsg.className='msg';
+  if(!/\.xlsx$/i.test(file.name)){
+    appMsg.classList.add('err'); appMsg.textContent='.xlsx ファイルを選んでください。';
+    return;
+  }
+  appMsg.innerHTML = '<span class="spin"></span>変換中…';
+  try{
+    const buf = await file.arrayBuffer();
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.load(buf);
+
+    let done = null;
+    wb.eachSheet(ws=>{ const r = transformSheet(ws); if(r && !done) done = r; });
+
+    if(!done){
+      appMsg.className='msg err';
+      appMsg.textContent='勤務データが見つからないか、すでに変換済みのファイルです。';
+      return;
+    }
+
+    const outBuf = await wb.xlsx.writeBuffer();
+    const blob = new Blob([outBuf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const name = outName(file.name);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name; document.body.appendChild(a); a.click();
+    a.remove(); setTimeout(()=>URL.revokeObjectURL(url), 4000);
+
+    appMsg.className='msg ok';
+    appMsg.textContent='✓ 変換が完了しました。ダウンロードを確認してください。';
+    result.classList.remove('hidden');
+    result.innerHTML =
+      '<h3>変換結果</h3><table>'+
+      '<tr><td>出力ファイル名</td><td>'+name+'</td></tr>'+
+      '<tr><td>スタッフ人数</td><td>'+done.staffCount+' 名</td></tr>'+
+      '<tr><td>社員（番号付け対象）</td><td>'+done.shainCount+' 名</td></tr>'+
+      '<tr><td>休みに付けた番号の数</td><td>'+done.numbered+' 件</td></tr>'+
+      '</table>';
+  }catch(err){
+    console.error(err);
+    appMsg.className='msg err';
+    appMsg.textContent='変換に失敗しました：'+(err && err.message ? err.message : err);
+  }finally{
+    fileEl.value='';
+  }
+}
+</script>
+</body>
+</html>
