@@ -52,9 +52,11 @@
     <!-- ===== ログイン ===== -->
     <div id="gate">
       <h1>タイムカードチェックアプリ</h1>
-      <p class="lead">合言葉を入力してください。</p>
-      <label class="fld" for="pw">合言葉</label>
-      <input type="password" id="pw" autocomplete="off" placeholder="合言葉を入力">
+      <p class="lead">ユーザー名（自由）とパスワードを入力してください。</p>
+      <label class="fld" for="uname">ユーザー名</label>
+      <input type="text" id="uname" autocomplete="off" placeholder="自由（空欄でもOK）">
+      <label class="fld" for="pw" style="margin-top:12px">パスワード</label>
+      <input type="password" id="pw" autocomplete="off" placeholder="パスワードを入力">
       <button class="btn" id="pwBtn">入る</button>
       <div class="msg err" id="pwMsg"></div>
     </div>
@@ -90,7 +92,7 @@
 <script src="exceljs.min.js"></script>
 <script>
 /* ========== 設定 ========== */
-// 合言葉を変えたいときは、ここの文字だけ書き換えてください
+// パスワードを変えたいときは、ここの文字だけ書き換えてください
 const PASSWORD = "timecard";
 /* ========================== */
 
@@ -106,7 +108,7 @@ function tryLogin(){
     gate.classList.add('hidden');
     app.classList.remove('hidden');
   }else{
-    pwMsg.textContent = '合言葉が違います。';
+    pwMsg.textContent = 'パスワードが違います。';
     pw.select();
   }
 }
