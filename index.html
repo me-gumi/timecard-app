@@ -24,6 +24,8 @@
   input[type=password],input[type=text]{width:100%;padding:11px 13px;font-size:16px;border:1px solid var(--line);
     border-radius:10px;outline:none}
   input:focus{border-color:var(--brand)}
+  .remember{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:var(--sub);cursor:pointer;user-select:none}
+  .remember input{width:16px;height:16px;cursor:pointer;margin:0}
   .btn{display:inline-block;padding:11px 18px;font-size:15px;font-weight:700;color:#fff;background:var(--brand);
     border:none;border-radius:10px;cursor:pointer}
   .btn:disabled{background:#b9c2cc;cursor:default}
@@ -107,6 +109,7 @@
         <input type="text" id="uname" name="username" autocomplete="username" placeholder="自由（空欄でもOK）">
         <label class="fld" for="pw" style="margin-top:12px">パスワード</label>
         <input type="password" id="pw" name="password" autocomplete="current-password" placeholder="パスワードを入力">
+        <label class="remember"><input type="checkbox" id="remember"> ログイン情報を保存する（次回からログイン不要）</label>
         <button type="submit" class="btn full" id="pwBtn">入る</button>
       </form>
       <div class="msg err" id="pwMsg"></div>
@@ -204,9 +207,21 @@ function show(id){
 
 /* ---------- ログイン ---------- */
 const pw=document.getElementById('pw'), pwMsg=document.getElementById('pwMsg');
-function tryLogin(){ if(pw.value===PASSWORD){ try{sessionStorage.setItem('tc_ok','1')}catch(e){} show('screen-upload'); } else { pwMsg.textContent='パスワードが違います。'; pw.select(); } }
+function tryLogin(){
+  if(pw.value===PASSWORD){
+    try{
+      const rem=document.getElementById('remember').checked;
+      if(rem){ localStorage.setItem('tc_ok','1'); }
+      else { localStorage.removeItem('tc_ok'); sessionStorage.setItem('tc_ok','1'); }
+    }catch(e){}
+    show('screen-upload');
+  } else { pwMsg.textContent='パスワードが違います。'; pw.select(); }
+}
 document.getElementById('gateForm').addEventListener('submit',e=>{ e.preventDefault(); tryLogin(); });
-try{ if(sessionStorage.getItem('tc_ok')==='1') show('screen-upload'); }catch(e){}
+try{
+  if(localStorage.getItem('tc_ok')==='1'){ document.getElementById('remember').checked=true; show('screen-upload'); }
+  else if(sessionStorage.getItem('tc_ok')==='1'){ show('screen-upload'); }
+}catch(e){}
 
 /* ---------- ユーティリティ ---------- */
 function cellStr(v){ if(v===null||v===undefined) return ''; if(typeof v==='object'){ if(v.result!==undefined&&v.result!==null) return String(v.result); if(v.text!==undefined) return String(v.text); if(v.richText) return v.richText.map(t=>t.text).join(''); return ''; } return String(v).trim(); }
