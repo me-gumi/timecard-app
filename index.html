@@ -109,7 +109,7 @@
         <input type="text" id="uname" name="username" autocomplete="username" placeholder="自由（空欄でもOK）">
         <label class="fld" for="pw" style="margin-top:12px">パスワード</label>
         <input type="password" id="pw" name="password" autocomplete="current-password" placeholder="パスワードを入力">
-        <label class="remember"><input type="checkbox" id="remember"> ログイン情報を保存する（次回からログイン不要）</label>
+        <label class="remember"><input type="checkbox" id="remember"> ログイン情報を保存する（次回から自動で入力）</label>
         <button type="submit" class="btn full" id="pwBtn">入る</button>
       </form>
       <div class="msg err" id="pwMsg"></div>
@@ -210,17 +210,25 @@ const pw=document.getElementById('pw'), pwMsg=document.getElementById('pwMsg');
 function tryLogin(){
   if(pw.value===PASSWORD){
     try{
-      const rem=document.getElementById('remember').checked;
-      if(rem){ localStorage.setItem('tc_ok','1'); }
-      else { localStorage.removeItem('tc_ok'); sessionStorage.setItem('tc_ok','1'); }
+      if(document.getElementById('remember').checked){
+        localStorage.setItem('tc_remember','1');
+        localStorage.setItem('tc_user', document.getElementById('uname').value||'');
+        localStorage.setItem('tc_pass', pw.value);
+      } else {
+        localStorage.removeItem('tc_remember'); localStorage.removeItem('tc_user'); localStorage.removeItem('tc_pass');
+      }
     }catch(e){}
     show('screen-upload');
   } else { pwMsg.textContent='パスワードが違います。'; pw.select(); }
 }
 document.getElementById('gateForm').addEventListener('submit',e=>{ e.preventDefault(); tryLogin(); });
+// 起動時：保存済みならユーザー名・パスワードを自動で入れておく（画面は表示、あとは「入る」を押すだけ）
 try{
-  if(localStorage.getItem('tc_ok')==='1'){ document.getElementById('remember').checked=true; show('screen-upload'); }
-  else if(sessionStorage.getItem('tc_ok')==='1'){ show('screen-upload'); }
+  if(localStorage.getItem('tc_remember')==='1'){
+    document.getElementById('remember').checked=true;
+    document.getElementById('uname').value=localStorage.getItem('tc_user')||'';
+    pw.value=localStorage.getItem('tc_pass')||'';
+  }
 }catch(e){}
 
 /* ---------- ユーティリティ ---------- */
