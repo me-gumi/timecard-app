@@ -102,11 +102,13 @@
     <div id="gate">
       <h1>タイムカードチェックアプリ</h1>
       <p class="lead">ユーザー名（自由）とパスワードを入力してください。</p>
-      <label class="fld" for="uname">ユーザー名</label>
-      <input type="text" id="uname" autocomplete="off" placeholder="自由（空欄でもOK）">
-      <label class="fld" for="pw" style="margin-top:12px">パスワード</label>
-      <input type="password" id="pw" autocomplete="off" placeholder="パスワードを入力">
-      <button class="btn full" id="pwBtn">入る</button>
+      <form id="gateForm" autocomplete="on">
+        <label class="fld" for="uname">ユーザー名</label>
+        <input type="text" id="uname" name="username" autocomplete="username" placeholder="自由（空欄でもOK）">
+        <label class="fld" for="pw" style="margin-top:12px">パスワード</label>
+        <input type="password" id="pw" name="password" autocomplete="current-password" placeholder="パスワードを入力">
+        <button type="submit" class="btn full" id="pwBtn">入る</button>
+      </form>
       <div class="msg err" id="pwMsg"></div>
     </div>
     <p class="foot">© タイムカードチェックアプリ</p>
@@ -203,8 +205,7 @@ function show(id){
 /* ---------- ログイン ---------- */
 const pw=document.getElementById('pw'), pwMsg=document.getElementById('pwMsg');
 function tryLogin(){ if(pw.value===PASSWORD){ try{sessionStorage.setItem('tc_ok','1')}catch(e){} show('screen-upload'); } else { pwMsg.textContent='パスワードが違います。'; pw.select(); } }
-document.getElementById('pwBtn').addEventListener('click',tryLogin);
-pw.addEventListener('keydown',e=>{if(e.key==='Enter')tryLogin();});
+document.getElementById('gateForm').addEventListener('submit',e=>{ e.preventDefault(); tryLogin(); });
 try{ if(sessionStorage.getItem('tc_ok')==='1') show('screen-upload'); }catch(e){}
 
 /* ---------- ユーティリティ ---------- */
