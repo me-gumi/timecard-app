@@ -477,8 +477,10 @@ async function downloadXlsx(){
     const cIn=map(ci.inC),cOut=map(ci.outC),cBrk=map(ci.brkC),cWork=map(ci.workC),cCom=6,cYas=7;
     for(let c=1;c<=lastCol;c++){ const v=getPlain(sws.getRow(1).getCell(c).value); if(v!==null) ows.getRow(1).getCell(map(c)).value=v; }
     ows.getRow(1).getCell(cCom).value='コメント'; ows.getRow(1).getCell(cYas).value='休み';
-    for(let c=1;c<=lastCol;c++){ const w=sws.getColumn(c).width; if(w) ows.getColumn(map(c)).width=w; }
-    ows.getColumn(cCom).width=12; ows.getColumn(cYas).width=6;
+    // PC一画面で「実深夜時間」あたりまで見えるよう、全列の既定幅を約9に（日付・コメントだけ少し広め）
+    ows.properties.defaultColWidth=9;
+    ows.getColumn(1).width=11;    // 年月日（日付が読めるよう）
+    ows.getColumn(cCom).width=11; // コメント（エラー表記が読めるよう）
     const byRow=new Map(); state.records.forEach(r=>byRow.set(r.srcRow,r));
     const RED={type:'pattern',pattern:'solid',fgColor:{argb:'FFF8C9C9'}};
     const AMBER={type:'pattern',pattern:'solid',fgColor:{argb:'FFFFE49B'}};
