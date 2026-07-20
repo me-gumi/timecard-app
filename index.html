@@ -201,8 +201,11 @@ const appScreens=['screen-upload','screen-loading','screen-summary','screen-exce
 function show(id){
   const login=(id==='gate');
   document.getElementById('loginWrap').classList.toggle('hidden', !login);
-  document.getElementById('appWrap').classList.toggle('hidden', login);
+  const appWrap=document.getElementById('appWrap');
+  appWrap.classList.toggle('hidden', login);
   appScreens.forEach(s=>document.getElementById(s).classList.toggle('hidden', s!==id));
+  // 画面ごとに横幅：エクセルは広め、一覧・連絡文などは文章がきれいに収まる幅に
+  appWrap.style.maxWidth = (id==='screen-excel') ? '1100px' : '700px';
 }
 
 /* ---------- ログイン ---------- */
@@ -449,15 +452,13 @@ function buildContact(){
   for(const e of targets){
     const dates=e.errDates.map(d=>d.md).join('、');
     const msg=
-'【✅ '+month+'月度タイムカードチェックのお願い】\n'+
+'【'+month+'月度タイムカードチェックのお願い】\n'+
 e.name+'さんお疲れ様です！\n'+
-month+'月度のタイムカードの確認でご連絡です>＜\n\n'+
-'下記の'+e.errCount+'日間が、休憩時間不足または休憩打刻のない勤怠となっておりました。\n'+
-'お間違えないでしょうか？\n'+
-'修正が必要な場合には、申請のご対応をお願いいたします。\n'+
-'（承認は人事総務側で対応します！）\n\n'+
-'[要確認！]\n'+dates+'\n\n'+
-'何卒よろしくお願いいたしますm(_ _)m';
+month+'月度のタイムカードの確認でご連絡です。\n\n'+
+'下記の日付で打刻エラーが見つかりました。\n'+
+'こちら一度ご確認いただき、打刻修正後は上長への承認依頼のご連絡もあわせてお願いできますと幸いです。\n\n'+
+'＜要確認＞\n'+dates+'\n\n'+
+'何卒よろしくお願いいたします。';
     const div=document.createElement('div'); div.className='cmsg';
     div.innerHTML='<div class="hd"><span class="nm">'+e.code+'　'+e.name+'</span>'+
       '<span><button class="btn sub" style="padding:6px 14px;font-size:13px">コピー</button><span class="copied hidden">コピーしました</span></span></div><pre></pre>';
