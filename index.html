@@ -334,13 +334,13 @@ function recompute(){
     let eff=off, countWarn=null;
     if(isS){
       let k=-1; for(let kk=0;kk<=partials.length;kk++){ if(TARGETS.includes(off+kk)){ k=kk; break; } }
-      if(k>=1){ for(let i=0;i<k;i++){ const p=partials[i]; p.errType=''; p.red={}; p.warnType='打刻ミス?'; p.amber.in=1; p.amber.out=1; p.amber.comment=1; } eff=off+k; }
+      if(k>=1){ for(let i=0;i<k;i++){ partials[i].errType='打刻ミス?'; } eff=off+k; } // 打刻ミス?も赤エラー（要修正）。redは打刻漏れ時に設定済み
       else if(k===0){ eff=off; }
       else { countWarn=(off>8?'多い（有給申請漏れ?）':'少ない'); eff=off; }
     }
     // 休み番号（社員：公休＋打刻ミス日）
     let yc=0;
-    for(const r of rs){ if(!r.isTotal && (r.status==='off' || r.warnType==='打刻ミス?')){ if(isS){ yc++; r.yasumi=yc; } else r.yasumi=''; } else r.yasumi=''; }
+    for(const r of rs){ if(!r.isTotal && (r.status==='off' || r.errType==='打刻ミス?')){ if(isS){ yc++; r.yasumi=yc; } else r.yasumi=''; } else r.yasumi=''; }
     // 日付収集
     const errDates=[], warnDates=[];
     for(const r of rs){ if(r.isTotal) continue; if(r.errType) errDates.push({srcRow:r.srcRow,md:mmdd(r.rawDate)}); else if(r.warnType) warnDates.push({srcRow:r.srcRow,md:mmdd(r.rawDate)}); }
