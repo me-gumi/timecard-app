@@ -55,7 +55,7 @@
   .emp .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
   .emp .who{font-weight:700;font-size:15px}
   .emp .who .code{color:var(--sub);font-weight:400;font-size:12px;margin-right:8px}
-  .emp .meta{font-size:13px;color:var(--sub)}
+  .emp .meta{font-size:13px;color:var(--ink);font-weight:700}
   .emp .meta .warnbadge{color:var(--warn);font-weight:700;margin-left:8px}
   .emp .line{margin-top:5px;font-size:13px}
   .emp .cnt{font-weight:700;cursor:pointer;text-decoration:underline}
@@ -499,6 +499,8 @@ async function downloadXlsx(){
       if(rec.red) Object.keys(rec.red).forEach(k=>{ const c=colOfKey(k); if(c) orow.getCell(c).fill=RED; });
       if(rec.amber) Object.keys(rec.amber).forEach(k=>{ const c=colOfKey(k); if(c) orow.getCell(c).fill=AMBER; });
     }
+    // A〜E列（年月日〜所属グループ名）は長文で重要度が低いので、縮小表示にしてコメント・休み列への文字はみ出しを防ぐ
+    for(let r=1;r<=sws.rowCount;r++){ for(let c=1;c<=5;c++){ ows.getRow(r).getCell(c).alignment={ shrinkToFit:true }; } }
     const outBuf=await out.xlsx.writeBuffer();
     const blob=new Blob([outBuf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
     const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='タイムカードチェック済み.xlsx';
